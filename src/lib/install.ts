@@ -1,5 +1,6 @@
 // Установка на главный экран: определение платформы и системная кнопка «Установить».
 
+import { isApp } from './platform';
 import { emit } from './store';
 
 export type Platform = 'ios' | 'android' | 'desktop';
@@ -12,6 +13,7 @@ export function platform(): Platform {
   return 'desktop';
 }
 export function isStandalone(): boolean {
+  if (isApp) return true;
   return (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone)').matches) || (navigator as any).standalone === true;
 }
 /** В iOS ставить на главный экран умеет только Safari (и браузеры на его основе через «Поделиться»). */

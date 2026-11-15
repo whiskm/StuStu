@@ -29,4 +29,4 @@ export const UNI_BELLS = () => bells([[540, 630], [640, 730], [760, 850], [860, 
 export const SCHOOL_BELLS = () => bells([[510, 555], [565, 610], [630, 675], [695, 740], [750, 795], [805, 850], [860, 905]]);
 
 export const LVL_TXT = ['свободный день', 'обычный день', 'загруженный день', 'тяжёлый день'];
-export const APP_VERSION = '3.0';
+export const APP_VERSION: string = __APP_VERSION__;

@@ -25,6 +25,14 @@ let ignorePop = 0;
 let sheetCloser: (() => boolean) | null = null;
 export function setSheetCloser(fn: () => boolean): void { sheetCloser = fn; }
 
+/** Системная кнопка «Назад» на Android: закрыть окно или вернуться на страницу назад. false — идти некуда. */
+export function systemBack(): boolean {
+  if (sheetCloser && sheetCloser()) return true;
+  if (R.stack.length) { history.back(); return true; }
+  if (R.tab !== 'home') { goTab('home'); return true; }
+  return false;
+}
+
 const toTop = () => { if (typeof window !== 'undefined') window.scrollTo(0, 0); };
 
 export function push(name: PageName, p: Page['p'] = {}): void {

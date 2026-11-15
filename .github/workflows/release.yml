@@ -1,0 +1,63 @@
+name: Release
+
+# Тег версии (git tag v1.2.3 && git push --tags) собирает приложения для Android и Windows
+# и публикует их одним релизом на странице Releases.
+on:
+  push:
+    tags: ['v*']
+  # Повторная публикация (например, после неудачной сборки): Actions → Release →
+  # Run workflow и указать тег. Приложения собираются из выбранной ветки
+  # и прикрепляются к релизу этого тега.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Тег релиза, к которому прикрепить файлы, например v3.0.0
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    uses: ./.github/workflows/android.yml
+    secrets: inherit
+
+  windows:
+    uses: ./.github/workflows/desktop.yml
+
+  publish:
+    needs: [android, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          path: release
+          merge-multiple: true
+
+      # Убираем пробелы из имён, чтобы ссылки на скачивание читались.
+      - name: Collect the files
+        run: |
+          mkdir -p out
+          find release -type f \( -name '*.apk' -o -name '*.exe' \) -print0 |
+            while IFS= read -r -d '' f; do
+              mv "$f" "out/$(basename "$f" | tr ' ' '-')"
+            done
+          ls -la out
+          test -n "$(ls out)"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          target_commitish: ${{ github.sha }}
+          files: out/*
+          generate_release_notes: true
+          body: |
+            ## Как установить
+
+            | Устройство | Что делать |
+            |---|---|
+            | **Android** | Скачать `StuStu.apk` ниже и открыть его |
+            | **Windows 10 и 11** | Скачать файл `…_x64-setup.exe` ниже и запустить |
+            | **iPhone и iPad** | Открыть [stustu.whiskm.workers.dev](https://stustu.whiskm.workers.dev/) в Safari → «Поделиться» → «На экран „Домой“» |
+
+            Подробности — в [описании проекта](https://github.com/${{ github.repository }}#установка).

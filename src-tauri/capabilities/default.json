@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Что окно приложения может просить у системы. Чтения и записи произвольных файлов здесь нет: файлы сохраняются только через команду save_file в lib.rs, где место выбирает пользователь.",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

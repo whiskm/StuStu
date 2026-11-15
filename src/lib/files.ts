@@ -1,11 +1,26 @@
 // Резервная копия, обмен расписанием и загрузка из файла.
 
 import { isoOf, todayE } from './dates';
+import { isAndroidApp, isDesktopApp } from './platform';
 import { D, S, normalize, setData } from './store';
 import type { Data } from './types';
 
-/** Отдаёт файл пользователю: через системное «Поделиться», а где его нет — обычной загрузкой. */
+/**
+ * Отдаёт файл пользователю. Возвращает false, если он отменил действие.
+ * Windows — окно «Сохранить как», Android и телефоны — системное «Поделиться», остальное — обычная загрузка.
+ */
 export async function shareFile(name: string, text: string, type: string): Promise<boolean> {
+  if (isDesktopApp) {
+    const { invoke } = await import('@tauri-apps/api/core');
+    return invoke<boolean>('save_file', { name, contents: text });
+  }
+  if (isAndroidApp) {
+    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem');
+    const { Share } = await import('@capacitor/share');
+    const written = await Filesystem.writeFile({ path: name, data: text, directory: Directory.Cache, encoding: Encoding.UTF8 });
+    try { await Share.share({ title: name, files: [written.uri] }); return true; }
+    catch { return false; }
+  }
   const blob = new Blob([text], { type });
   try {
     const file = new File([blob], name, { type });

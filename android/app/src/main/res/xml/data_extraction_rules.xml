@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Данные StuStu не уходят в облачную копию Google: они хранятся только на устройстве.
+     Прямой перенос со старого телефона на новый (по кабелю или Wi-Fi) разрешён. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" />
+        <exclude domain="file" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+    </cloud-backup>
+</data-extraction-rules>
