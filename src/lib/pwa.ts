@@ -1,6 +1,7 @@
 // Работа без интернета и обновление приложения.
 
 import { registerSW } from 'virtual:pwa-register';
+import { isApp } from './platform';
 import { emit } from './store';
 
 let needRefresh = false;
@@ -13,7 +14,8 @@ export function dismissUpdate(): void { needRefresh = false; emit(); }
 
 export function initPwa(offlineReady: () => void): void {
   onReady = offlineReady;
-  if (!('serviceWorker' in navigator)) return;
+  // В установленных приложениях файлы уже лежат на устройстве, отдельный кэш не нужен
+  if (isApp || !('serviceWorker' in navigator)) return;
   update = registerSW({
     onNeedRefresh() { needRefresh = true; emit(); },
     onOfflineReady() { onReady?.(); },

@@ -1,0 +1,75 @@
+name: Android
+
+# Собирает APK при каждом изменении приложения (файл лежит в артефактах запуска).
+# release.yml вызывает этот же workflow для тегов версий.
+on:
+  push:
+    branches: ['**']
+    paths-ignore: ['**.md', 'docs/**', 'src-tauri/**', 'legacy/**']
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      # Android SDK уже стоит на машинах GitHub (Ubuntu);
+      # недостающие части Gradle скачает сам.
+
+      - run: npm ci
+      - run: npm run android:sync
+
+      # Для выпуска нужен ключ подписи из секретов репозитория (см. docs/DEVELOPMENT.md).
+      # Без него собирается отладочная версия: приложение работает, но обновление
+      # не встанет поверх версии, подписанной другим ключом.
+      - name: Restore signing key
+        id: key
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "path=$RUNNER_TEMP/release.jks" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build APK
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ steps.key.outputs.path }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          if [ -n "$ANDROID_KEYSTORE_PATH" ]; then
+            ./gradlew --no-daemon assembleRelease
+            cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/StuStu.apk"
+            echo "APK подписан ключом выпуска." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning::В секретах нет ключа подписи, собрана отладочная версия APK"
+            ./gradlew --no-daemon assembleDebug
+            cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/StuStu.apk"
+            echo "APK подписан временным отладочным ключом: следующая версия не встанет поверх этой. Добавьте ключ подписи в секреты (docs/DEVELOPMENT.md)." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: apk
+          path: StuStu.apk
+          if-no-files-found: error

@@ -1,5 +1,7 @@
 import { render } from 'preact';
 import { App } from './App';
+import { systemBack } from './lib/nav';
+import { isAndroidApp } from './lib/platform';
 import { initPwa } from './lib/pwa';
 import { S, emit, load, onSaveError, reload, LS_KEY } from './lib/store';
 import { sheetsOpen } from './ui/sheets';
@@ -23,3 +25,9 @@ if (typeof matchMedia === 'function') {
 }
 
 initPwa(() => toast('StuStu готов работать без интернета'));
+
+if (isAndroidApp) {
+  void import('@capacitor/app').then(({ App }) => {
+    void App.addListener('backButton', () => { if (!systemBack()) void App.minimizeApp(); });
+  });
+}

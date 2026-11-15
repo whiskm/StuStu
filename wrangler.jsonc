@@ -1,0 +1,10 @@
+// Настройки сайта на Cloudflare: статические файлы из папки dist.
+// Адрес получается из имени: https://stustu.<поддомен аккаунта>.workers.dev
+{
+  "name": "stustu",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}

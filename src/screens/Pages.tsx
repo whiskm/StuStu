@@ -4,6 +4,7 @@ import type { ComponentChildren } from 'preact';
 import { APP_VERSION, SCHOOL_BELLS, TYPES, UNI_BELLS } from '../lib/consts';
 import { DAY, fDM, fDayMonth, fDays, fDur, fFull, fLessons, fRange, fRel, fShort, mondayOf, nowMinF, todayE } from '../lib/dates';
 import { canPromptInstall, isIosSafari, isStandalone, platform, promptInstall } from '../lib/install';
+import { isAndroidApp, isApp } from '../lib/platform';
 import {
   activeHw, attPct, attStats, earliestAtt, evDone, eventTitle, eventWhenText, goalOf, kindName, occurrences, perDay, prepSum, subj, subjName,
   unmarkedPast, unmarkedToday, upcoming, upcomingEvents, weekIndex, weekName,
@@ -211,7 +212,7 @@ function SettingsPage() {
       </div>
       <Sec>Приложение</Sec>
       <div class="list">
-        <Li icon="phone" label="Установить на главный экран" value={isStandalone() ? 'установлено' : undefined} onClick={() => push('install')} />
+        {!isApp && <Li icon="phone" label="Установить на главный экран" value={isStandalone() ? 'установлено' : undefined} onClick={() => push('install')} />}
         <Li icon="cal" label="Выгрузить в календарь" value="с напоминаниями" onClick={icsForm} />
       </div>
       <Sec>Данные</Sec>
@@ -221,7 +222,7 @@ function SettingsPage() {
         <Li icon="share" label="Поделиться расписанием" onClick={shareSchedule} />
         <Li icon="trash" label="Удалить все данные" onClick={wipe} danger />
       </div>
-      <p class="hint">StuStu · версия {APP_VERSION}<br />Все данные хранятся только на этом устройстве, в браузере. Регулярно сохраняй резервную копию — её можно загрузить на любом устройстве.</p>
+      <p class="hint">StuStu · версия {APP_VERSION}{isAndroidApp ? ' · Android' : isApp ? ' · Windows' : ''}<br />Все данные хранятся только на этом устройстве{isApp ? '' : ', в браузере'}. Регулярно сохраняй резервную копию — её можно загрузить на любом устройстве.</p>
     </div>
   );
 }

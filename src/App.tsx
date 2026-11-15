@@ -1,7 +1,9 @@
 import { useEffect } from 'preact/hooks';
 import { DOW_ACC, dowOf, fCd, fFull, todayE } from './lib/dates';
 import { guessSubject, homeKeyNow, targetLabel, timerElapsed, weekIndex } from './lib/logic';
+import { SystemBars, SystemBarsStyle } from '@capacitor/core';
 import { R, goTab, push, type Tab } from './lib/nav';
+import { isAndroidApp } from './lib/platform';
 import { applyUpdate, dismissUpdate, updateReady } from './lib/pwa';
 import { D, S, subscribe } from './lib/store';
 import { holidayForm, lessonForm } from './forms/basic';
@@ -18,10 +20,16 @@ const TABS: [Tab, IconName, string][] = [
   ['home', 'route', 'Сегодня'], ['sched', 'cal', 'Расписание'], ['tasks', 'tasks', 'Задания'], ['notes', 'note', 'Заметки'], ['stats', 'chart', 'Статистика'],
 ];
 
+let barsDark: boolean | null = null;
 function applyTheme(): void {
   const th = S().theme;
   const dark = th === 2 || (th === 0 && typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  // Значки в строке состояния Android должны читаться на фоне выбранной темы
+  if (isAndroidApp && barsDark !== dark) {
+    barsDark = dark;
+    void SystemBars.setStyle({ style: dark ? SystemBarsStyle.Dark : SystemBarsStyle.Light }).catch(() => {});
+  }
   const m = document.querySelector('meta[name=theme-color]');
   if (m) m.setAttribute('content', dark ? '#0B1411' : '#EEF2EC');
 }

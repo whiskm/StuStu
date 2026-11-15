@@ -1,0 +1,41 @@
+name: Windows
+
+# Собирает установщик для Windows при каждом изменении приложения
+# (файл лежит в артефактах запуска). release.yml вызывает этот же workflow для тегов версий.
+on:
+  push:
+    branches: ['**']
+    paths-ignore: ['**.md', 'docs/**', 'android/**', 'legacy/**']
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - run: npm ci
+
+      - name: Build
+        run: npx tauri build --bundles nsis
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: windows
+          if-no-files-found: error
+          path: src-tauri/target/release/bundle/nsis/*.exe
