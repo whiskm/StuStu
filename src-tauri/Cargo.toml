@@ -1,6 +1,6 @@
 [package]
 name = "stustu"
-version = "3.0.0"
+version = "3.0.1"
 description = "StuStu — учебный планер"
 edition = "2021"
 publish = false
