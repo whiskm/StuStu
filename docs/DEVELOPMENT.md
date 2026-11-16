@@ -127,7 +127,7 @@ src/
   styles/       оформление и шрифты
 tests/          тесты (Vitest)
 android/        проект Capacitor
-src-tauri/      оболочка для Windows: одно окно на запуск и сохранение файлов (Rust)
+src-tauri/      оболочка для Windows: одно окно на запуск, сохранение файлов, открытие ссылки на GitHub (Rust)
 assets/         исходники иконок
 public/         иконки сайта и заголовки для Cloudflare
 legacy/v2.0/    старая версия, только для сравнения

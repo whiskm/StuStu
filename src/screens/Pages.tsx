@@ -4,6 +4,7 @@ import type { ComponentChildren } from 'preact';
 import { APP_VERSION, SCHOOL_BELLS, TYPES, UNI_BELLS } from '../lib/consts';
 import { DAY, fDM, fDayMonth, fDays, fDur, fFull, fLessons, fRange, fRel, fShort, mondayOf, nowMinF, todayE } from '../lib/dates';
 import { canPromptInstall, isIosSafari, isStandalone, platform, promptInstall } from '../lib/install';
+import { GITHUB_URL, onExternalClick } from '../lib/links';
 import { isAndroidApp, isApp } from '../lib/platform';
 import {
   activeHw, attPct, attStats, earliestAtt, evDone, eventTitle, eventWhenText, goalOf, kindName, occurrences, perDay, prepSum, subj, subjName,
@@ -152,6 +153,14 @@ function Li({ icon, label, value, onClick, danger }: { icon: IconName; label: st
     </button>
   );
 }
+/** Строка-ссылка на внешний сайт. */
+function LinkRow({ icon, label, value, href }: { icon: IconName; label: string; value?: string; href: string }) {
+  return (
+    <a class="li" href={href} target="_blank" rel="noopener noreferrer" onClick={onExternalClick}>
+      <Icon n={icon} /><span class="grow">{label}</span>{value != null && <span class="lv">{value}</span>}<Icon n="ext" s={18} class="chev" />
+    </a>
+  );
+}
 function SelRow({ icon, label, value, options, onChange }: { icon: IconName; label: string; value: number; options: Opt[]; onChange: (v: number) => void }) {
   return (
     <label class="li">
@@ -214,6 +223,7 @@ function SettingsPage() {
       <div class="list">
         {!isApp && <Li icon="phone" label="Установить на главный экран" value={isStandalone() ? 'установлено' : undefined} onClick={() => push('install')} />}
         <Li icon="cal" label="Выгрузить в календарь" value="с напоминаниями" onClick={icsForm} />
+        <LinkRow icon="code" label="StuStu на GitHub" value="новые версии" href={GITHUB_URL} />
       </div>
       <Sec>Данные</Sec>
       <div class="list">
